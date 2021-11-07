@@ -15,6 +15,7 @@ main:
 
   sensor := bme680 device
 
-  print "Temperature: $(%.1f sensor.read_temperature) C"
+  print "Temperature: $(%.1f sensor.read_temperature)°C"
   print "Humidity: $(%.1f sensor.read_humidity)%"
   print "Pressure: $(%.1f sensor.read_pressure / 100) hPa"
+  print "Gas: $(%.3f sensor.read_gas / 1000) kΩ"
