@@ -83,11 +83,11 @@ class bme680:
   static PAR_H5_REG_                      ::=  0xE6 //  8 bit
   static PAR_H6_REG_                      ::=  0xE7 //  8 bit
   static PAR_H7_REG_                      ::=  0xE8 //  8 bit
-  static PAR_GH1_REG_                     ::=  0xED // 8 bit
+  static PAR_GH1_REG_                     ::=  0xED //  8 bit
   static PAR_GH2_REG_                     ::=  0xEB // 16 bit
-  static PAR_GH3_REG_                     ::=  0xEE // 8 bit
-  static RES_HEAT_RANGE_REG_              ::=  0x02 // 8 bit
-  static RES_HEAT_VAL_REG_                ::=  0x00 // 8 bit, signed
+  static PAR_GH3_REG_                     ::=  0xEE //  8 bit
+  static RES_HEAT_RANGE_REG_              ::=  0x02 //  8 bit
+  static RES_HEAT_VAL_REG_                ::=  0x00 //  8 bit, signed
   static RANGE_SW_ERR_REG_                ::=  0x04
 
   reg_/serial.Registers ::= ?
