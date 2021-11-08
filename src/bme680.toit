@@ -288,7 +288,7 @@ class bme680:
       if val & 0b0010_0000 == 0:
         return
       sleep --ms=it + 1  // Back off slowly.
-    throw "BME280: Unable to measure THP"
+    throw "BME680: Unable to measure THP"
   /**
   Checks whether gas measurement is done.
   */
