@@ -33,7 +33,7 @@ class bme680:
   // 0th gas heater resistance 
   static CTRL_GAS_REG_                    ::=  0x71
   
-  // 0th gas heater wait 
+  // Gas measurement ctrl regs  
   static GAS_WAIT_REG0_                   ::=  0x64
   
   // Humidity oversampling  
