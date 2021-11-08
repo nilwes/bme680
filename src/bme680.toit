@@ -124,8 +124,8 @@ class bme680:
   t_fine_    := 0
 
   //ADC Ranges used for gas resistance calculations
-  const_array1 ::= [1, 1, 1, 1, 1, 0.99, 1, 0.992, 1, 1, 0.998, 0.995, 1, 0.99, 1, 1]
-  const_array2 ::= [8000000, 4000000, 2000000, 1000000, 499500.4995,
+  const_array1_ ::= [1, 1, 1, 1, 1, 0.99, 1, 0.992, 1, 1, 0.998, 0.995, 1, 0.99, 1, 1]
+  const_array2_ ::= [8000000, 4000000, 2000000, 1000000, 499500.4995,
                     248262.1648, 125000, 63004.03226, 31281.28128, 15625,
                     7812.5, 3906.25, 1953.125, 976.5625, 488.28125, 244.140625]
   
@@ -239,8 +239,8 @@ class bme680:
 
     // Adopted from https://github.com/adafruit/Adafruit_BME680/blob/master/bme68x.c
     var1 := (1340.0 + (5.0 * range_sw_err_))
-    var2 := (var1) * (1.0 + const_array1[gas_range] / 100.0)
-    var3 := 1.0 + (const_array2[gas_range] / 100.0)
+    var2 := (var1) * (1.0 + const_array1_[gas_range] / 100.0)
+    var3 := 1.0 + (const_array2_[gas_range] / 100.0)
     gas_res := 1.0 / (var3 * (0.000000125) * gas_range * (((gas_adc - 512.0) / var2) + 1.0))
 
     return gas_res
