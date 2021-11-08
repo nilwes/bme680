@@ -123,6 +123,8 @@ class bme680:
   temp_comp_ := 0
   t_fine_    := 0
 
+  plate_temp_ ::= 300 // Gas sensor will heat to this temp in Celsius.
+
   //ADC Ranges used for gas resistance calculations
   const_array1 ::= [1, 1, 1, 1, 1, 0.99, 1, 0.992, 1, 1, 0.998, 0.995, 1, 0.99, 1, 1]
   const_array2 ::= [8000000, 4000000, 2000000, 1000000, 499500.4995,
@@ -148,8 +150,8 @@ class bme680:
     // 1x oversampling hum
     reg_.write_u8 CTRL_HUM_REG_ 0b00_000_001
 
-    // 2x oversampling temp. 16x oversampling press.
-    reg_.write_u8 CTRL_MEAS_REG_ 0b010_101_00
+    // 1x oversampling temp. 1x oversampling press.
+    reg_.write_u8 CTRL_MEAS_REG_ 0b001_001_00
 
     // No IIR filter
     reg_.write_u8 IIR_FILTER_CONIFG_REG_ 0b000_000_00
@@ -157,12 +159,9 @@ class bme680:
     //Set run_gas and choose heater resistance at 0th position
     reg_.write_u8 CTRL_GAS_REG_ 0b000_1_0000
 
-    // gas_wait to ~100ms
-    reg_.write_u8 GAS_WAIT_REG0_ 0x59 
-    
-    // heater resistance calculation and storage
-    res_heat := calculate_res_heat
-    reg_.write_u8 RES_HEAT_REG0_ res_heat
+    // Heating time for gas plate in ms
+    reg_.write_u8 GAS_WAIT_REG0_ 0b01_111111 // 4 x 64 ms = 256
+
 
   /**
   Reads the temperature and returns it in degrees Celsius.
@@ -220,17 +219,20 @@ class bme680:
   Reads the gas resistance and returns it in Ohm.
   */
   read_gas -> float:
-    reg_.write_u8 CTRL_MEAS_REG_ 0b010_101_01 // Trigger force mode gas measurement
-   
-    wait_for_gas_measurement_
+    // Heater resistance calculation and storage. This is dependent on the
+    // ambient temperature. Hence it must be calculated just prior to gas measurement.
+    res_heat := calculate_res_heat
+    reg_.write_u8 RES_HEAT_REG0_ res_heat
+
+    measure_
 
     if ((reg_.read_u8 HEAT_STAB_REG_) & 0b00_1_00000)  == 0:
       print "No valid gas measurement"
-      return -1.0
+      //return -1.0
 
     if ((reg_.read_u8 HEAT_STAB_REG_) & 0b000_1_0000)  == 0:
       print "Heater temperature not stable"
-      return -1.0
+      //return -1.0
 
     gas_adc := reg_.read_u16_be GASDATA_REG_
     gas_adc >>= 6
@@ -248,14 +250,13 @@ class bme680:
   Calculates the goal gas heater plat resistance and returns it.
   */
   calculate_res_heat -> int:
-    plate_temp ::= 300 // Gas sensor will heat to this temp in Celsius. Mapped below to a resistance value.
-    amb_temp := read_temperature // Get ambient temperature. Needed for calculations below.
+    measure_ // Get ambient temperature. Stored in temp_comp_. Needed for calculations below.
 
     var1 := (par_GH1_ / 16.0) + 49.0
     var2 := ((par_GH2_ / 32768.0) * 0.0005) + 0.00235
     var3 := (par_GH3_ / 1024.0)
-    var4 := var1 * (1.0 + (var2 * plate_temp))
-    var5 := var4 + (var3 * amb_temp)
+    var4 := var1 * (1.0 + (var2 * plate_temp_))
+    var5 := var4 + (var3 * temp_comp_)
     res_heat := (3.4 * ((var5 * (4.0 / (4.0 + res_heat_range_)) * 
       (1.0 / (1.0 + (res_heat_val_ * 0.002)))) - 25)).to_int
     
@@ -283,22 +284,12 @@ class bme680:
   Checks whether THP measurement is done.
   */
   wait_for_measurement_:
-    16.repeat:
+    30.repeat:
       val := reg_.read_u8 MEAS_STATUS_REG_
-      if val & 0b0010_0000 == 0:
+      if (val & 0b1000_0000) >> 7 == 1: //Last bit indicates new mesurement values ready
         return
       sleep --ms=it + 1  // Back off slowly.
-    throw "BME680: Unable to measure THP"
-  /**
-  Checks whether gas measurement is done.
-  */
-  wait_for_gas_measurement_:
-    16.repeat:
-      val := reg_.read_u8 MEAS_STATUS_REG_
-      if val & 0b0100_0000 == 0: 
-        return
-      sleep --ms=it + 1  // Back off slowly.
-    throw "BME680: Unable to measure gas"
+    throw "BME680: Unable to measure TPHG"
 
   /**
   Reads calibration data stored in sensor memory.
