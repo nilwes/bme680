@@ -14,8 +14,9 @@ main:
   device := bus.device 0x77
 
   sensor := bme680 device
-
-  print "Temperature: $(%.1f sensor.read_temperature)°C"
-  print "Humidity: $(%.1f sensor.read_humidity)%"
+  
+  print "Gas resistance: $(%.3f sensor.read_gas / 1000) kΩ"
   print "Pressure: $(%.1f sensor.read_pressure / 100) hPa"
-  print "Gas: $(%.3f sensor.read_gas / 1000) kΩ"
+  print "Humidity: $(%.1f sensor.read_humidity)%"
+  print "Temperature: $(%.1f sensor.read_temperature)°C"
+  
