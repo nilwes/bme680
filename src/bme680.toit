@@ -214,7 +214,7 @@ class bme680:
       var3 := ((calc_pres / 256.0) * (calc_pres / 256.0) * (calc_pres / 256.0) * (par_P10_ / 131072.0))
       press_comp := (calc_pres + (var1 + var2 + var3 + (par_P7_ * 128.0)) / 16.0)
 
-      return press_comp + 900.0 // 9 -> Calibration to known QNH
+      return press_comp // + 900.0 // 9 -> Calibration to known QNH
 
   /**
   Reads the gas resistance and returns it in Ohm.
