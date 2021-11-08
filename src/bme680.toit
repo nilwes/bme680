@@ -266,11 +266,10 @@ class bme680:
   */
   measure_:
     reg_.write_u8 CTRL_MEAS_REG_ 0b001_001_01
-    sleep --ms=8
+
     wait_for_measurement_
 
     temp_adc := reg_.read_u24_be TEMPDATA_REG_
-
     temp_adc >>= 4
 
     var1 := ((temp_adc / 16384.0) - (par_T1_ / 1024.0)) * par_T2_
