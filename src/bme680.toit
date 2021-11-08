@@ -83,11 +83,11 @@ class bme680:
   static PAR_H5_REG_                      ::=  0xE6 //  8 bit
   static PAR_H6_REG_                      ::=  0xE7 //  8 bit
   static PAR_H7_REG_                      ::=  0xE8 //  8 bit
-  static PAR_GH1_REG_                     ::=  0xED //  8 bit
+  static PAR_GH1_REG_                     ::=  0xED // 8 bit
   static PAR_GH2_REG_                     ::=  0xEB // 16 bit
-  static PAR_GH3_REG_                     ::=  0xEE //  8 bit
-  static RES_HEAT_RANGE_REG_              ::=  0x02 //  8 bit
-  static RES_HEAT_VAL_REG_                ::=  0x00 //  8 bit, signed
+  static PAR_GH3_REG_                     ::=  0xEE // 8 bit
+  static RES_HEAT_RANGE_REG_              ::=  0x02 // 8 bit
+  static RES_HEAT_VAL_REG_                ::=  0x00 // 8 bit, signed
   static RANGE_SW_ERR_REG_                ::=  0x04
 
   reg_/serial.Registers ::= ?
@@ -124,8 +124,8 @@ class bme680:
   t_fine_    := 0
 
   //ADC Ranges used for gas resistance calculations
-  const_array1_ ::= [1, 1, 1, 1, 1, 0.99, 1, 0.992, 1, 1, 0.998, 0.995, 1, 0.99, 1, 1]
-  const_array2_ ::= [8000000, 4000000, 2000000, 1000000, 499500.4995,
+  const_array1 ::= [1, 1, 1, 1, 1, 0.99, 1, 0.992, 1, 1, 0.998, 0.995, 1, 0.99, 1, 1]
+  const_array2 ::= [8000000, 4000000, 2000000, 1000000, 499500.4995,
                     248262.1648, 125000, 63004.03226, 31281.28128, 15625,
                     7812.5, 3906.25, 1953.125, 976.5625, 488.28125, 244.140625]
   
@@ -214,7 +214,7 @@ class bme680:
       var3 := ((calc_pres / 256.0) * (calc_pres / 256.0) * (calc_pres / 256.0) * (par_P10_ / 131072.0))
       press_comp := (calc_pres + (var1 + var2 + var3 + (par_P7_ * 128.0)) / 16.0)
 
-      return press_comp
+      return press_comp + 900.0 // 9 -> Calibration to known QNH
 
   /**
   Reads the gas resistance and returns it in Ohm.
@@ -239,12 +239,14 @@ class bme680:
 
     // Adopted from https://github.com/adafruit/Adafruit_BME680/blob/master/bme68x.c
     var1 := (1340.0 + (5.0 * range_sw_err_))
-    var2 := (var1) * (1.0 + const_array1_[gas_range] / 100.0)
-    var3 := 1.0 + (const_array2_[gas_range] / 100.0)
+    var2 := (var1) * (1.0 + const_array1[gas_range] / 100.0)
+    var3 := 1.0 + (const_array2[gas_range] / 100.0)
     gas_res := 1.0 / (var3 * (0.000000125) * gas_range * (((gas_adc - 512.0) / var2) + 1.0))
 
     return gas_res
-
+  /**
+  Calculates the goal gas heater plat resistance and returns it.
+  */
   calculate_res_heat -> int:
     plate_temp ::= 300 // Gas sensor will heat to this temp in Celsius. Mapped below to a resistance value.
     amb_temp := read_temperature // Get ambient temperature. Needed for calculations below.
@@ -258,7 +260,9 @@ class bme680:
       (1.0 / (1.0 + (res_heat_val_ * 0.002)))) - 25)).to_int
     
     return res_heat
-
+  /**
+  Performs sensor readout into data registers.
+  */
   measure_:
     reg_.write_u8 CTRL_MEAS_REG_ 0b001_001_01
     sleep --ms=8
@@ -275,6 +279,9 @@ class bme680:
     t_fine_ = var1 + var2
     temp_comp_ = t_fine_ / 5120.0
     
+  /**
+  Checks whether THP measurement is done.
+  */
   wait_for_measurement_:
     16.repeat:
       val := reg_.read_u8 MEAS_STATUS_REG_
@@ -282,7 +289,9 @@ class bme680:
         return
       sleep --ms=it + 1  // Back off slowly.
     throw "BME280: Unable to measure THP"
-
+  /**
+  Checks whether gas measurement is done.
+  */
   wait_for_gas_measurement_:
     16.repeat:
       val := reg_.read_u8 MEAS_STATUS_REG_
@@ -291,6 +300,9 @@ class bme680:
       sleep --ms=it + 1  // Back off slowly.
     throw "BME680: Unable to measure gas"
 
+  /**
+  Reads calibration data stored in sensor memory.
+  */
   read_calibration_data_:
     // Read temperature calibration
     par_T1_ = reg_.read_u16_le PAR_T1_REG_
