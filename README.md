@@ -6,6 +6,8 @@ The BME680 contains a small MOX sensor. The heated metal oxide changes resistanc
 
 Please note this sensor, like all VOC/gas sensors, has variability, and to get precise measurements you will want to calibrate it against known sources! That said, for general environmental sensors, it will give you a good idea of trends and comparisons. It is recommended that you run this sensor for 48 hours when you first receive it to "burn it in", and then 30 minutes in the desired mode every time the sensor is in use. This is because the sensitivity levels of the sensor will change during early use, and the resistance will slowly rise over time as the MOX warms up to its baseline reading.
 
+<img src="https://www.bosch-sensortec.com/media/boschsensortec/products/environmental_sensors/gas_sensors/bosch-sensortec_website-relaunch_stage_bme680_res_800x450.jpg" width="50%" height="50%" />
+
 
 ## Usage
 
