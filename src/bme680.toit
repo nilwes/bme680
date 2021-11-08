@@ -228,11 +228,11 @@ class bme680:
 
     if ((reg_.read_u8 HEAT_STAB_REG_) & 0b00_1_00000)  == 0:
       print "No valid gas measurement"
-      //return -1.0
+      return -1.0
 
     if ((reg_.read_u8 HEAT_STAB_REG_) & 0b000_1_0000)  == 0:
-      print "Heater temperature not stable"
-      //return -1.0
+      print "Gas heater temperature not stable"
+      return -1.0
 
     gas_adc := reg_.read_u16_be GASDATA_REG_
     gas_adc >>= 6
