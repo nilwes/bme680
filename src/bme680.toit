@@ -14,7 +14,7 @@ I2C_ADDRESS_ALT ::= 0x77
 /**
 Driver for the Bosch BME680 environmental sensor, using I2C.
 */
-class Driver:
+class bme680:
   // Chip ID address 
   static CHIP_ID_REG_                     ::=  0xD0
 
@@ -30,10 +30,10 @@ class Driver:
   // 0th gas heater resistance 
   static RES_HEAT_REG0_                   ::=  0x5A
 
-  // 0th gas heater resistance 
+  // Gas measurement ctrl regs 
   static CTRL_GAS_REG_                    ::=  0x71
   
-  // Gas measurement ctrl regs  
+  // 0th gas heater wait 
   static GAS_WAIT_REG0_                   ::=  0x64
   
   // Humidity oversampling  
@@ -156,12 +156,11 @@ class Driver:
     // No IIR filter
     reg_.write_u8 IIR_FILTER_CONIFG_REG_ 0b000_000_00
 
-    //Set run_gas and choose heater resistance at 0th position
-    reg_.write_u8 CTRL_GAS_REG_ 0b000_1_0000
+    //Set do not run_gas and choose heater resistance at 0th position
+    reg_.write_u8 CTRL_GAS_REG_ 0b000_0_0000
 
     // Heating time for gas plate in ms
-    reg_.write_u8 GAS_WAIT_REG0_ 0b01_111111 // 4 x 64 ms = 256
-
+    reg_.write_u8 GAS_WAIT_REG0_ 0b01_111111 // 4 x 64 ms = 256 ms
 
   /**
   Reads the temperature and returns it in degrees Celsius.
@@ -213,18 +212,24 @@ class Driver:
       var3 := ((calc_pres / 256.0) * (calc_pres / 256.0) * (calc_pres / 256.0) * (par_P10_ / 131072.0))
       press_comp := (calc_pres + (var1 + var2 + var3 + (par_P7_ * 128.0)) / 16.0)
 
-      return press_comp + 900.0 // +900 Pa -> Calibration to known QNH
+      return press_comp + 900.0 // 9 -> Calibration to known QNH
 
   /**
   Reads the gas resistance and returns it in Ohm.
   */
   read_gas -> float:
+    //Set run_gas and choose heater resistance at 0th position
+    reg_.write_u8 CTRL_GAS_REG_ 0b000_1_0000
+
     // Heater resistance calculation and storage. This is dependent on the
     // ambient temperature. Hence it must be calculated just prior to gas measurement.
     res_heat := calculate_res_heat
     reg_.write_u8 RES_HEAT_REG0_ res_heat
 
     measure_
+
+    //Set not run_gas and choose heater resistance at 0th position
+    reg_.write_u8 CTRL_GAS_REG_ 0b000_0_0000
 
     if ((reg_.read_u8 HEAT_STAB_REG_) & 0b00_1_00000)  == 0:
       print "No valid gas measurement"
@@ -270,6 +275,7 @@ class Driver:
     wait_for_measurement_
 
     temp_adc := reg_.read_u24_be TEMPDATA_REG_
+
     temp_adc >>= 4
 
     var1 := ((temp_adc / 16384.0) - (par_T1_ / 1024.0)) * par_T2_
@@ -279,11 +285,10 @@ class Driver:
     t_fine_ = var1 + var2
     temp_comp_ = t_fine_ / 5120.0
     
-  /**
-  Checks whether THP measurement is done.
-  */
+
+
   wait_for_measurement_:
-    30.repeat:
+    100.repeat: // If maximum gas heater wait time is used (4096ms) it takes roughly 90 iterations before the measurement is done.
       val := reg_.read_u8 MEAS_STATUS_REG_
       if (val & 0b1000_0000) >> 7 == 1: //Last bit indicates new mesurement values ready
         return
