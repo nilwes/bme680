@@ -13,7 +13,7 @@ main:
 
   device := bus.device 0x77
 
-  sensor := bme680 device
+  sensor := Driver device
   
   print "Gas resistance: $(%.3f sensor.read_gas / 1000) kΩ"
   print "Pressure: $(%.1f sensor.read_pressure / 100) hPa"
