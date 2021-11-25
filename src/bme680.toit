@@ -14,7 +14,7 @@ I2C_ADDRESS_ALT ::= 0x77
 /**
 Driver for the Bosch BME680 environmental sensor, using I2C.
 */
-class bme680:
+class Driver:
   // Chip ID address 
   static CHIP_ID_REG_                     ::=  0xD0
 
