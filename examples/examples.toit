@@ -4,19 +4,18 @@
 
 import gpio
 import i2c
-import ..src.bme680
+import bme680
 
 main:
   bus := i2c.Bus
     --sda=gpio.Pin 21
     --scl=gpio.Pin 22
 
-  device := bus.device 0x77
+  device := bus.device bme680.I2C_ADDRESS
 
-  sensor := Driver device
-  
+  sensor := bme680.Driver device
+
   print "Gas resistance: $(%.3f sensor.read_gas / 1000) kΩ"
   print "Pressure: $(%.1f sensor.read_pressure / 100) hPa"
   print "Humidity: $(%.1f sensor.read_humidity)%"
   print "Temperature: $(%.1f sensor.read_temperature)°C"
-  

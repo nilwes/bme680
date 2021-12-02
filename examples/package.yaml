@@ -1,0 +1,3 @@
+dependencies:
+  bme680:
+    path: ..

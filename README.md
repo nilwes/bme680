@@ -1,5 +1,6 @@
-# bme680
-Toit driver for the BME680 temperature, humidity, pressure, and gas sensor.
+# BME680
+
+Driver for the BME680 temperature, humidity, pressure, and gas sensor.
 
 ## VOC Sensor
 The BME680 contains a small MOX sensor. The heated metal oxide changes resistance based on the volatile organic compounds (VOC) in the air, so it can be used to detect gasses & alcohols such as Ethanol, Alcohol, and Carbon Monoxide, and perform air quality measurements. Note that it will give you one resistance value, with overall VOC content, but it cannot differentiate gasses or alcohols.
