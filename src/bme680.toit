@@ -25,7 +25,7 @@ class Driver:
   static SOFT_RESET_CMD_                  ::=  0xB6
 
   // IIR Filter config.
-  static IIR_FILTER_CONIFG_REG_           ::=  0x75
+  static IIR_FILTER_CONFIG_REG_           ::=  0x75
 
   // 0th gas heater resistance.
   static RES_HEAT_REG0_                   ::=  0x5A
@@ -153,7 +153,7 @@ class Driver:
     reg_.write_u8 CTRL_MEAS_REG_ 0b001_001_00
 
     // No IIR filter.
-    reg_.write_u8 IIR_FILTER_CONIFG_REG_ 0b000_000_00
+    reg_.write_u8 IIR_FILTER_CONFIG_REG_ 0b000_000_00
 
     // Set to not run_gas and choose heater resistance at 0th position.
     reg_.write_u8 CTRL_GAS_REG_ 0b000_0_0000
