@@ -25,7 +25,7 @@ class Driver:
   static SOFT_RESET_CMD_                  ::=  0xB6
 
   // IIR Filter config.
-  IIR_FILTER_CONIFG_REG_                  ::=  0x75
+  static IIR_FILTER_CONIFG_REG_           ::=  0x75
 
   // 0th gas heater resistance.
   static RES_HEAT_REG0_                   ::=  0x5A
