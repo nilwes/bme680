@@ -15,10 +15,23 @@ Please note this sensor, like all VOC/gas sensors, has variability, and to get p
 A simple usage example.
 
 ```
+import gpio
+import i2c
 import bme680
 
 main:
-  ...
+  bus := i2c.Bus
+    --sda=gpio.Pin 21
+    --scl=gpio.Pin 22
+
+  device := bus.device bme680.I2C-ADDRESS
+
+  sensor := bme680.Driver device
+
+  print "Gas resistance: $(%.3f sensor.read-gas / 1000) kΩ"
+  print "Pressure: $(%.1f sensor.read-pressure / 100) hPa"
+  print "Humidity: $(%.1f sensor.read-humidity)%"
+  print "Temperature: $(%.1f sensor.read-temperature)°C"
 ```
 
 See the `examples` folder for more examples.

@@ -11,11 +11,11 @@ main:
     --sda=gpio.Pin 21
     --scl=gpio.Pin 22
 
-  device := bus.device bme680.I2C_ADDRESS
+  device := bus.device bme680.I2C-ADDRESS
 
   sensor := bme680.Driver device
 
-  print "Gas resistance: $(%.3f sensor.read_gas / 1000) kΩ"
-  print "Pressure: $(%.1f sensor.read_pressure / 100) hPa"
-  print "Humidity: $(%.1f sensor.read_humidity)%"
-  print "Temperature: $(%.1f sensor.read_temperature)°C"
+  print "Gas resistance: $(%.3f sensor.read-gas / 1000) kΩ"
+  print "Pressure: $(%.1f sensor.read-pressure / 100) hPa"
+  print "Humidity: $(%.1f sensor.read-humidity)%"
+  print "Temperature: $(%.1f sensor.read-temperature)°C"
