@@ -1,1 +1,2 @@
-
+name: bme680
+description: Driver for the BME680 temperature, humidity, pressure, and gas sensor.
